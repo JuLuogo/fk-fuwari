@@ -13,6 +13,8 @@ export const ja: Translation = {
 
 	[Key.comments]: "コメント",
 
+	[Key.pinned]: "ピン留め",
+
 	[Key.untitled]: "タイトルなし",
 	[Key.uncategorized]: "カテゴリなし",
 	[Key.noTags]: "タグなし",

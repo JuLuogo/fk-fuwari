@@ -13,6 +13,8 @@ export const id: Translation = {
 
 	[Key.comments]: "Komentar",
 
+	[Key.pinned]: "Disematkan",
+
 	[Key.untitled]: "Tanpa Judul",
 	[Key.uncategorized]: "Tanpa Kategori",
 	[Key.noTags]: "Tanpa Tag",

@@ -13,6 +13,8 @@ export const tr: Translation = {
 
 	[Key.comments]: "Yorumlar",
 
+	[Key.pinned]: "Sabitlendi",
+
 	[Key.untitled]: "Başlıksız",
 	[Key.uncategorized]: "Katagorisiz",
 	[Key.noTags]: "Tag Bulunamadı",

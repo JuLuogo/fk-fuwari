@@ -13,6 +13,8 @@ export const zh_TW: Translation = {
 
 	[Key.comments]: "評論",
 
+	[Key.pinned]: "置頂",
+
 	[Key.untitled]: "無標題",
 	[Key.uncategorized]: "未分類",
 	[Key.noTags]: "無標籤",

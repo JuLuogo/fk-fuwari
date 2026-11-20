@@ -13,6 +13,8 @@ export const es: Translation = {
 
 	[Key.comments]: "Comentarios",
 
+	[Key.pinned]: "Fijado",
+
 	[Key.untitled]: "Sin título",
 	[Key.uncategorized]: "Sin categoría",
 	[Key.noTags]: "Sin etiquetas",

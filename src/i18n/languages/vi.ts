@@ -13,6 +13,8 @@ export const vi: Translation = {
 
 	[Key.comments]: "Bình luận",
 
+	[Key.pinned]: "Ghim",
+
 	[Key.untitled]: "Không tiêu đề",
 	[Key.uncategorized]: "Chưa phân loại",
 	[Key.noTags]: "Chưa có thẻ",

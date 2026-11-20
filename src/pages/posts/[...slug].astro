@@ -69,6 +69,16 @@ const jsonLd = {
                 </div>
             </div>
 
+            <!-- pinned badge -->
+            {entry.data.pinned && (
+                <div class="onload-animation mb-2">
+                    <span class="inline-flex items-center gap-1 rounded-md bg-[var(--btn-regular-bg)] px-2 py-1 text-sm font-medium text-[var(--primary)]">
+                        <Icon name="material-symbols:keep-rounded" class="text-[1rem]"></Icon>
+                        {i18n(I18nKey.pinned)}
+                    </span>
+                </div>
+            )}
+
             <!-- title -->
             <div class="relative onload-animation">
                 <div

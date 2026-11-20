@@ -10,6 +10,8 @@ enum I18nKey {
 
 	comments = "comments",
 
+	pinned = "pinned",
+
 	untitled = "untitled",
 	uncategorized = "uncategorized",
 	noTags = "noTags",

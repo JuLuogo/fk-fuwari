@@ -13,6 +13,8 @@ export const ko: Translation = {
 
 	[Key.comments]: "댓글",
 
+	[Key.pinned]: "상단 고정",
+
 	[Key.untitled]: "제목 없음",
 	[Key.uncategorized]: "분류되지 않음",
 	[Key.noTags]: "태그 없음",

@@ -5,6 +5,7 @@ description: 这里是「付康FK」，欢迎来到我的博客。
 tags: ["随笔"]
 category: 随笔
 draft: false
+pinned: false
 ---
 
 欢迎来到 **付康FK** 的个人博客 👋

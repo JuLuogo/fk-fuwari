@@ -34,6 +34,7 @@ const postsCollection = defineCollection({
 		published: z.coerce.date(),
 		updated: optionalDate,
 		draft: booleanOrFalse,
+		pinned: booleanOrFalse,
 		description: stringOrEmpty,
 		image: stringOrEmpty,
 		tags: stringList,

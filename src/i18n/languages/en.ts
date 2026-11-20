@@ -13,6 +13,8 @@ export const en: Translation = {
 
 	[Key.comments]: "Comments",
 
+	[Key.pinned]: "Pinned",
+
 	[Key.untitled]: "Untitled",
 	[Key.uncategorized]: "Uncategorized",
 	[Key.noTags]: "No Tags",

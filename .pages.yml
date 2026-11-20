@@ -74,6 +74,10 @@ content:
       - name: category
         label: 分类
         type: string
+      - name: pinned
+        label: 置顶
+        type: boolean
+        description: 打开后会排在首页和归档最前面，并在卡片和文章页显示置顶标记
       - name: draft
         label: 草稿
         type: boolean

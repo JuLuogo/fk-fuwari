@@ -1,0 +1,27 @@
+{
+	"banner": {
+		"enable": false,
+		"src": "/images/banner.jpg",
+		"position": "center",
+		"credit": {
+			"enable": false,
+			"text": "",
+			"url": ""
+		}
+	},
+	"announcement": {
+		"enable": false,
+		"id": "",
+		"type": "info",
+		"closable": true,
+		"text": "",
+		"link": {
+			"text": "",
+			"url": ""
+		}
+	},
+	"icp": {
+		"number": "",
+		"url": "https://beian.miit.gov.cn/"
+	}
+}

@@ -1,99 +1,134 @@
-# 🍥Fuwari  
-![Node.js >= 20](https://img.shields.io/badge/node.js-%3E%3D20-brightgreen) 
-![pnpm >= 9](https://img.shields.io/badge/pnpm-%3E%3D9-blue) 
-[![DeepWiki](https://img.shields.io/badge/DeepWiki-saicaca%2Ffuwari-blue.svg?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAyCAYAAAAnWDnqAAAAAXNSR0IArs4c6QAAA05JREFUaEPtmUtyEzEQhtWTQyQLHNak2AB7ZnyXZMEjXMGeK/AIi+QuHrMnbChYY7MIh8g01fJoopFb0uhhEqqcbWTp06/uv1saEDv4O3n3dV60RfP947Mm9/SQc0ICFQgzfc4CYZoTPAswgSJCCUJUnAAoRHOAUOcATwbmVLWdGoH//PB8mnKqScAhsD0kYP3j/Yt5LPQe2KvcXmGvRHcDnpxfL2zOYJ1mFwrryWTz0advv1Ut4CJgf5uhDuDj5eUcAUoahrdY/56ebRWeraTjMt/00Sh3UDtjgHtQNHwcRGOC98BJEAEymycmYcWwOprTgcB6VZ5JK5TAJ+fXGLBm3FDAmn6oPPjR4rKCAoJCal2eAiQp2x0vxTPB3ALO2CRkwmDy5WohzBDwSEFKRwPbknEggCPB/imwrycgxX2NzoMCHhPkDwqYMr9tRcP5qNrMZHkVnOjRMWwLCcr8ohBVb1OMjxLwGCvjTikrsBOiA6fNyCrm8V1rP93iVPpwaE+gO0SsWmPiXB+jikdf6SizrT5qKasx5j8ABbHpFTx+vFXp9EnYQmLx02h1QTTrl6eDqxLnGjporxl3NL3agEvXdT0WmEost648sQOYAeJS9Q7bfUVoMGnjo4AZdUMQku50McDcMWcBPvr0SzbTAFDfvJqwLzgxwATnCgnp4wDl6Aa+Ax283gghmj+vj7feE2KBBRMW3FzOpLOADl0Isb5587h/U4gGvkt5v60Z1VLG8BhYjbzRwyQZemwAd6cCR5/XFWLYZRIMpX39AR0tjaGGiGzLVyhse5C9RKC6ai42ppWPKiBagOvaYk8lO7DajerabOZP46Lby5wKjw1HCRx7p9sVMOWGzb/vA1hwiWc6jm3MvQDTogQkiqIhJV0nBQBTU+3okKCFDy9WwferkHjtxib7t3xIUQtHxnIwtx4mpg26/HfwVNVDb4oI9RHmx5WGelRVlrtiw43zboCLaxv46AZeB3IlTkwouebTr1y2NjSpHz68WNFjHvupy3q8TFn3Hos2IAk4Ju5dCo8B3wP7VPr/FGaKiG+T+v+TQqIrOqMTL1VdWV1DdmcbO8KXBz6esmYWYKPwDL5b5FA1a0hwapHiom0r/cKaoqr+27/XcrS5UwSMbQAAAABJRU5ErkJggg==)](https://deepwiki.com/saicaca/fuwari)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fsaicaca%2Ffuwari.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fsaicaca%2Ffuwari?ref=badge_shield&issueType=license)
+# 付康FK
 
-A static blog template built with [Astro](https://astro.build).
+> 记录生活与技术的个人博客 —— https://fk-fuwari.vercel.app/
 
-[**🖥️ Live Demo (Vercel)**](https://fuwari.vercel.app)
+基于 [Astro](https://astro.build/) + [Fuwari](https://github.com/saicaca/fuwari) 主题，用 [Pages CMS](https://pagescms.org) 在浏览器里写作，托管在 Vercel。
 
-![Preview Image](https://raw.githubusercontent.com/saicaca/resource/main/fuwari/home.png)
-
-🌏 README in
-[**中文**](https://github.com/saicaca/fuwari/blob/main/docs/README.zh-CN.md) /
-[**日本語**](https://github.com/saicaca/fuwari/blob/main/docs/README.ja.md) /
-[**한국어**](https://github.com/saicaca/fuwari/blob/main/docs/README.ko.md) /
-[**Español**](https://github.com/saicaca/fuwari/blob/main/docs/README.es.md) /
-[**ไทย**](https://github.com/saicaca/fuwari/blob/main/docs/README.th.md) /
-[**Tiếng Việt**](https://github.com/saicaca/fuwari/blob/main/docs/README.vi.md) /
-[**Bahasa Indonesia**](https://github.com/saicaca/fuwari/blob/main/docs/README.id.md) (Provided by the community and may not always be up-to-date)
-
-## ✨ Features
-
-- [x] Built with [Astro](https://astro.build) and [Tailwind CSS](https://tailwindcss.com)
-- [x] Smooth animations and page transitions
-- [x] Light / dark mode
-- [x] Customizable theme colors & banner
-- [x] Responsive design
-- [x] Search functionality with [Pagefind](https://pagefind.app/)
-- [x] [Markdown extended features](https://github.com/saicaca/fuwari?tab=readme-ov-file#-markdown-extended-syntax)
-- [x] Table of contents
-- [x] RSS feed
-
-## 🚀 Getting Started
-
-1. Create your blog repository:
-    - [Generate a new repository](https://github.com/saicaca/fuwari/generate) from this template or fork this repository.
-    - Or run one of the following commands:
-       ```sh
-       npm create fuwari@latest
-       yarn create fuwari
-       pnpm create fuwari@latest
-       bun create fuwari@latest
-       deno run -A npm:create-fuwari@latest
-       ```
-2. To edit your blog locally, clone your repository, run `pnpm install` to install dependencies.
-    - Install [pnpm](https://pnpm.io) `npm install -g pnpm` if you haven't.
-3. Edit the config file `src/config.ts` to customize your blog.
-4. Run `pnpm new-post <filename>` to create a new post and edit it in `src/content/posts/`.
-5. Deploy your blog to Vercel, Netlify, GitHub Pages, etc. following [the guides](https://docs.astro.build/en/guides/deploy/). You need to edit the site configuration in `astro.config.mjs` before deployment.
-
-## 📝 Frontmatter of Posts
-
-```yaml
 ---
-title: My First Blog Post
-published: 2023-09-09
-description: This is the first post of my new Astro blog.
-image: ./cover.jpg
-tags: [Foo, Bar]
-category: Front-end
-draft: false
-lang: jp      # Set only if the post's language differs from the site's language in `config.ts`
----
+
+## 技术栈
+
+| 用途 | 方案 |
+| --- | --- |
+| 静态站点 | Astro 5 |
+| 主题 | Fuwari（Tailwind CSS + Svelte） |
+| 站内搜索 | Pagefind（构建时生成索引） |
+| 内容管理 | Pages CMS（Git 驱动，保存即提交） |
+| 部署 | Vercel（推送到 main 自动构建） |
+
+## 本地开发
+
+```bash
+pnpm install    # 安装依赖
+pnpm dev        # 本地预览 http://localhost:4321
+pnpm build      # 构建到 dist/（同时生成 Pagefind 搜索索引）
+pnpm preview    # 预览构建结果
+pnpm check      # Astro 类型检查
+pnpm new-post   # 用脚本新建一篇文章
 ```
 
-## 🧩 Markdown Extended Syntax
+## 目录结构
 
-In addition to Astro's default support for [GitHub Flavored Markdown](https://github.github.com/gfm/), several extra Markdown features are included:
+```text
+.
+├── .pages.yml                 # Pages CMS 配置（后台字段 / 图片目录 / 文件命名）
+├── astro.config.mjs           # Astro 配置（站点域名在 site 字段）
+├── public/
+│   ├── favicon/               # 站点图标（由头像生成）
+│   └── images/                # Pages CMS 上传图片的目录（含默认横幅 banner.jpg）
+└── src/
+    ├── config.ts              # 站点名称、副标题、头像、导航、社交链接
+    ├── data/site.json         # 横幅 / 全站公告 / ICP 备案（可在 Pages CMS 里改）
+    ├── assets/images/         # 头像 avatar.jpg
+    ├── content/
+    │   ├── posts/             # 文章（Markdown）
+    │   └── spec/about.md      # 「关于」页面
+    ├── components/            # 页面组件
+    ├── layouts/               # 页面布局
+    └── pages/                 # 路由
+```
 
-- Admonitions ([Preview and Usage](https://fuwari.vercel.app/posts/markdown-extended/#admonitions))
-- GitHub repository cards ([Preview and Usage](https://fuwari.vercel.app/posts/markdown-extended/#github-repository-cards))
-- Enhanced code blocks with Expressive Code ([Preview](https://fuwari.vercel.app/posts/expressive-code/) / [Docs](https://expressive-code.com/))
+## 在浏览器里写作：Pages CMS
 
-## ⚡ Commands
+仓库根目录的 [`.pages.yml`](.pages.yml) 已经配置好了文章、关于页面、站点设置和图片上传，无需再改代码。
 
-All commands are run from the root of the project, from a terminal:
+1. 打开 <https://app.pagescms.org>，用 GitHub 账号登录。
+2. 首次使用需要为 Pages CMS 安装 GitHub App，并授权 `JuLuogo/fk-fuwari` 这个仓库（只给这一个仓库权限即可）。
+3. 在仓库列表里选择 `fk-fuwari`，左侧会出现「文章」「关于页面」「站点设置」三个入口。
+4. 新建 / 编辑文章，保存后 Pages CMS 会自动向仓库提交一次 commit，Vercel 随之重新部署。
 
-| Command                    | Action                                              |
-|:---------------------------|:----------------------------------------------------|
-| `pnpm install`             | Installs dependencies                               |
-| `pnpm dev`                 | Starts local dev server at `localhost:4321`         |
-| `pnpm build`               | Build your production site to `./dist/`             |
-| `pnpm preview`             | Preview your build locally, before deploying        |
-| `pnpm check`               | Run checks for errors in your code                  |
-| `pnpm format`              | Format your code using Biome                        |
-| `pnpm new-post <filename>` | Create a new post                                   |
-| `pnpm astro ...`           | Run CLI commands like `astro add`, `astro check`    |
-| `pnpm astro --help`        | Get help using the Astro CLI                        |
+### 文章字段
 
-## ✏️ Contributing
+| 字段 | 说明 |
+| --- | --- |
+| 标题 | 文章标题，同时用于生成默认文件名 |
+| 发布日期 | 首页排序依据，格式 `YYYY-MM-DD` |
+| 摘要 | 首页卡片和搜索结果中的简介 |
+| 封面图 | 可选，从「图片」媒体库选择或上传 |
+| 标签 | 可多个，标签页会自动汇总 |
+| 分类 | 单值，分类页会自动汇总 |
+| 草稿 | 打开后仅本地可见，不会出现在线上站点 |
+| 正文 | Markdown 所见即所得编辑器 |
 
-Check out the [Contributing Guide](https://github.com/saicaca/fuwari/blob/main/CONTRIBUTING.md) for details on how to contribute to this project.
+> 新建文章时文件名默认是 `日期-标题.md`，中文标题生成的 URL 可能不好看，可以在创建时把文件名改成英文或拼音，例如 `hello-world.md`，这样文章地址就是 `/posts/hello-world/`。
 
-## 📄 License
+### 站点设置（横幅 / 全站公告 / ICP）
 
-This project is licensed under the MIT License.
+「站点设置」写入 [`src/data/site.json`](src/data/site.json)，也可以直接改这个文件：
 
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fsaicaca%2Ffuwari.svg?type=large&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fsaicaca%2Ffuwari?ref=badge_large&issueType=license)
+| 配置 | 说明 |
+| --- | --- |
+| 首页横幅 | `banner.enable` 打开后首页顶部显示大图；`banner.src` 从图片库选或上传；`position` 控制图片上下对齐；`credit` 是右下角的图片来源标注 |
+| 全站公告 | `announcement.enable` 打开且 `text` 不为空时，所有页面顶部显示一条通知；`type` 决定配色（普通蓝 / 成功绿 / 提醒黄 / 重要红）；`closable` 允许访客关掉；`link` 可加一个跳转链接 |
+| ICP 备案 | `icp.number` 填上就显示在页脚并链接到工信部官网，留空则完全不显示 |
+
+公告的关闭状态记在访客浏览器里：想让老访客重新看到（比如换了新公告），把「公告标识」`id` 改一个值，或者直接改公告内容即可，留空时会按内容自动生成标识。
+
+### 图片
+
+- 上传的图片统一存放在 `public/images/`，写入文章里的路径是 `/images/xxx.jpg`。
+- 头像是构建期资源，放在 `src/assets/images/avatar.jpg`，需要替换时直接覆盖同名文件即可（站点图标 `public/favicon/` 目前由它生成）。
+
+## 也可以直接写 Markdown
+
+```markdown
+---
+title: 文章标题
+published: 2026-11-20
+description: 一句话摘要
+image: /images/cover.jpg
+tags: ["标签A", "标签B"]
+category: 随笔
+draft: false
+---
+
+正文……
+```
+
+## 站点自定义
+
+- **横幅 / 全站公告 / ICP 备案**：`src/data/site.json`（也可在 Pages CMS 的「站点设置」里改）
+- **站点名称 / 副标题 / 语言 / 主题色 / 导航栏 / 头像 / 个人简介 / 社交链接**：`src/config.ts`
+- **关于页面**：`src/content/spec/about.md`
+- **站点域名**（用于 sitemap 和 RSS）：`astro.config.mjs` 中的 `site`
+- **每页文章数**：`src/constants/constants.ts` 中的 `PAGE_SIZE`
+
+## 部署
+
+推送到 `main` 分支即可自动部署到 Vercel。首次部署时在 Vercel 里导入本仓库即可，构建设置：
+
+- 框架预设：Astro
+- 构建命令：`pnpm build`
+- 输出目录：`dist`
+
+如果你用了别的域名，记得同步修改 `astro.config.mjs` 里的 `site`。
+
+## 致谢
+
+- [Fuwari](https://github.com/saicaca/fuwari) by [saicaca](https://github.com/saicaca)
+- [Astro](https://astro.build/)
+- [Pages CMS](https://pagescms.org)
+
+## License
+
+文章内容版权归作者所有；代码部分遵循 [MIT](LICENSE)。文章默认采用 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) 授权。

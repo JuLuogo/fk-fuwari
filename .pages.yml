@@ -1,0 +1,214 @@
+# Pages CMS 配置（https://pagescms.org）
+# 打开 https://app.pagescms.org ，用 GitHub 账号登录并授权本仓库后即可开始写作。
+# 说明文档：https://pagescms.org/docs/configuration/
+
+# ---------- 图片存储 ----------
+# 上传的图片会存到仓库的 public/images/ 下，写进文章里的路径是 /images/xxx.jpg
+media:
+  - name: images
+    label: 图片
+    input: public/images
+    output: /images
+    extensions: [jpg, jpeg, png, webp, gif, svg, avif]
+    rename: safe
+
+# ---------- 全局设置 ----------
+settings:
+  # 保存时保留 schema 之外的自定义 frontmatter 字段，避免被覆盖
+  content:
+    merge: true
+  commit:
+    templates:
+      create: "content(create): {path}"
+      update: "content(update): {path}"
+      delete: "content(delete): {path}"
+      rename: "content(rename): {oldPath} -> {newPath}"
+
+# ---------- 内容 ----------
+content:
+  # 文章：对应 src/content/posts/ 目录下的 markdown 文件
+  - name: posts
+    label: 文章
+    type: collection
+    path: src/content/posts
+    format: yaml-frontmatter
+    subfolders: true
+    exclude: [README.md]
+    # 新建文章时的默认文件名，创建时可以手动改成英文或拼音，URL 会更好看
+    filename:
+      template: "{year}-{month}-{day}-{primary}.md"
+      field: create
+    view:
+      fields: [title, published, category, draft]
+      primary: title
+      sort: [published, title]
+      search: [title, description, tags, category]
+      default:
+        sort: published
+        order: desc
+    fields:
+      - name: title
+        label: 标题
+        type: string
+        required: true
+      - name: published
+        label: 发布日期
+        type: date
+        required: true
+        options:
+          format: yyyy-MM-dd
+      - name: description
+        label: 摘要
+        type: text
+        description: 显示在首页卡片和搜索结果里的简介
+      - name: image
+        label: 封面图
+        type: image
+        options:
+          media: images
+          extensions: [jpg, jpeg, png, webp, gif, avif]
+      - name: tags
+        label: 标签
+        type: string
+        list: true
+      - name: category
+        label: 分类
+        type: string
+      - name: draft
+        label: 草稿
+        type: boolean
+        description: 打开后不会出现在线上站点
+      - name: body
+        label: 正文
+        type: rich-text
+        options:
+          format: markdown
+          media: images
+          path: public/images
+          switcher: true
+
+  # 关于页面：对应 src/content/spec/about.md
+  - name: about
+    label: 关于页面
+    type: file
+    path: src/content/spec/about.md
+    format: yaml-frontmatter
+    fields:
+      - name: title
+        label: 标题
+        type: string
+      - name: body
+        label: 正文
+        type: rich-text
+        options:
+          format: markdown
+          media: images
+          path: public/images
+
+  # 站点设置：横幅 / 全站公告 / ICP 备案，对应 src/data/site.json
+  - name: site
+    label: 站点设置
+    type: file
+    path: src/data/site.json
+    format: json
+    fields:
+      # ---------- 首页横幅 ----------
+      - name: banner
+        label: 首页横幅
+        type: object
+        fields:
+          - name: enable
+            label: 启用横幅
+            type: boolean
+            description: 打开后首页顶部会显示大图横幅
+          - name: src
+            label: 横幅图片
+            type: image
+            description: 建议 1920×1080 左右的横图
+            options:
+              media: images
+              extensions: [jpg, jpeg, png, webp, avif]
+          - name: position
+            label: 图片垂直定位
+            type: select
+            options:
+              values:
+                - name: top
+                  label: 顶部
+                - name: center
+                  label: 居中
+                - name: bottom
+                  label: 底部
+          - name: credit
+            label: 图片版权信息
+            type: object
+            description: 在横幅右下角显示图片来源
+            fields:
+              - name: enable
+                label: 显示版权信息
+                type: boolean
+              - name: text
+                label: 版权文字
+                type: string
+              - name: url
+                label: 版权链接
+                type: string
+
+      # ---------- 全站公告 ----------
+      - name: announcement
+        label: 全站公告
+        type: object
+        description: 显示在所有页面顶部的通知条，留空即不显示
+        fields:
+          - name: enable
+            label: 启用公告
+            type: boolean
+          - name: text
+            label: 公告内容
+            type: text
+          - name: type
+            label: 公告类型
+            type: select
+            options:
+              values:
+                - name: info
+                  label: 普通（蓝）
+                - name: success
+                  label: 成功（绿）
+                - name: warning
+                  label: 提醒（黄）
+                - name: error
+                  label: 重要（红）
+          - name: closable
+            label: 允许访客关闭
+            type: boolean
+            description: 关闭后会记在访客浏览器里，不再显示
+          - name: id
+            label: 公告标识
+            type: string
+            description: 想让公告对已关闭过的访客重新出现，就在这里改一个新值；留空则按内容自动生成
+          - name: link
+            label: 公告链接
+            type: object
+            description: 文字和地址都填了才会显示
+            fields:
+              - name: text
+                label: 链接文字
+                type: string
+              - name: url
+                label: 链接地址
+                type: string
+
+      # ---------- ICP 备案 ----------
+      - name: icp
+        label: ICP 备案
+        type: object
+        fields:
+          - name: number
+            label: 备案号
+            type: string
+            description: 例如 粤ICP备12345678号-1，留空则页脚不显示
+          - name: url
+            label: 备案链接
+            type: string
+            description: 默认指向工信部备案系统

@@ -1,9 +1,13 @@
 ---
 
-import { profileConfig } from "../config";
+import { profileConfig, siteConfig } from "../config";
 import { url } from "../utils/url-utils";
 
 const currentYear = new Date().getFullYear();
+
+// 备案信息：只有填写了备案号才渲染，留空时页脚保持原样
+const icpNumber = siteConfig.icp?.number?.trim() ?? "";
+const icpUrl = siteConfig.icp?.url?.trim() || "https://beian.miit.gov.cn/";
 ---
 
 <!--<div class="border-t border-[var(&#45;&#45;primary)] mx-16 border-dashed py-8 max-w-[var(&#45;&#45;page-width)] flex flex-col items-center justify-center px-6">-->
@@ -17,5 +21,10 @@ const currentYear = new Date().getFullYear();
         Powered by
         <a class="transition link text-[var(--primary)] font-medium" target="_blank" href="https://astro.build">Astro</a> &
         <a class="transition link text-[var(--primary)] font-medium" target="_blank" href="https://github.com/saicaca/fuwari">Fuwari</a>
+        {icpNumber && (
+            <div class="mt-1">
+                <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener" href={icpUrl}>{icpNumber}</a>
+            </div>
+        )}
     </div>
 </div>

@@ -1,3 +1,4 @@
+import siteDataJson from "./data/site.json";
 import type {
 	ExpressiveCodeConfig,
 	LicenseConfig,
@@ -7,28 +8,48 @@ import type {
 } from "./types/config";
 import { LinkPreset } from "./types/config";
 
+/**
+ * 站点内容配置来自 src/data/site.json —— 横幅、全站公告、ICP 备案都在这里，
+ * 可以直接改 JSON，也可以在 Pages CMS 的「站点设置」里可视化编辑。
+ */
+type SiteData = {
+	banner: {
+		enable: boolean;
+		src: string;
+		position: "top" | "center" | "bottom";
+		credit: { enable: boolean; text: string; url: string };
+	};
+	announcement: {
+		enable: boolean;
+		id: string;
+		type: "info" | "success" | "warning" | "error";
+		closable: boolean;
+		text: string;
+		link: { text: string; url: string };
+	};
+	icp: { number: string; url: string };
+};
+
+const siteData = siteDataJson as SiteData;
+
 export const siteConfig: SiteConfig = {
-	title: "Fuwari",
-	subtitle: "Demo Site",
-	lang: "en", // Language code, e.g. 'en', 'zh_CN', 'ja', etc.
+	title: "付康FK",
+	subtitle: "记录生活与技术",
+	lang: "zh_CN", // Language code, e.g. 'en', 'zh_CN', 'ja', etc.
 	themeColor: {
 		hue: 250, // Default hue for the theme color, from 0 to 360. e.g. red: 0, teal: 200, cyan: 250, pink: 345
 		fixed: false, // Hide the theme color picker for visitors
 	},
-	banner: {
-		enable: false,
-		src: "assets/images/demo-banner.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
-		position: "center", // Equivalent to object-position, only supports 'top', 'center', 'bottom'. 'center' by default
-		credit: {
-			enable: false, // Display the credit text of the banner image
-			text: "", // Credit text to be displayed
-			url: "", // (Optional) URL link to the original artwork or artist's page
-		},
-	},
+	// 首页横幅，见 src/data/site.json（也可在 Pages CMS「站点设置」里改）
+	banner: siteData.banner,
 	toc: {
 		enable: true, // Display the table of contents on the right side of the post
 		depth: 2, // Maximum heading depth to show in the table, from 1 to 3
 	},
+	// 全站公告条，见 src/data/site.json
+	announcement: siteData.announcement,
+	// ICP 备案号：number 填了才在页脚显示，留空则不显示
+	icp: siteData.icp,
 	favicon: [
 		// Leave this array empty to use the default favicon
 		// {
@@ -46,33 +67,21 @@ export const navBarConfig: NavBarConfig = {
 		LinkPreset.About,
 		{
 			name: "GitHub",
-			url: "https://github.com/saicaca/fuwari", // Internal links should not include the base path, as it is automatically added
+			url: "https://github.com/JuLuogo/fk-fuwari", // Internal links should not include the base path, as it is automatically added
 			external: true, // Show an external link icon and will open in a new tab
 		},
 	],
 };
 
 export const profileConfig: ProfileConfig = {
-	avatar: "assets/images/demo-avatar.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
-	name: "Lorem Ipsum",
-	bio: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+	avatar: "assets/images/avatar.jpg", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
+	name: "付康FK",
+	bio: "记录生活，分享技术，慢慢生长。",
 	links: [
 		{
-			name: "Twitter",
-			icon: "fa6-brands:twitter", // Visit https://icones.js.org/ for icon codes
-			// You will need to install the corresponding icon set if it's not already included
-			// `pnpm add @iconify-json/<icon-set-name>`
-			url: "https://twitter.com",
-		},
-		{
-			name: "Steam",
-			icon: "fa6-brands:steam",
-			url: "https://store.steampowered.com",
-		},
-		{
 			name: "GitHub",
-			icon: "fa6-brands:github",
-			url: "https://github.com/saicaca/fuwari",
+			icon: "fa6-brands:github", // Visit https://icones.js.org/ for icon codes
+			url: "https://github.com/JuLuogo/fk-fuwari",
 		},
 	],
 };

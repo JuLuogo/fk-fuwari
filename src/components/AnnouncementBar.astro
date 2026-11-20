@@ -1,0 +1,104 @@
+---
+import { Icon } from "astro-icon/components";
+import { siteConfig } from "../config";
+
+const announcement = siteConfig.announcement;
+const text = announcement?.text?.trim() ?? "";
+const enabled = !!announcement?.enable && text !== "";
+
+const type = announcement?.type ?? "info";
+const closable = announcement?.closable !== false;
+const linkText = announcement?.link?.text?.trim() ?? "";
+const linkUrl = announcement?.link?.url?.trim() ?? "";
+const hasLink = linkText !== "" && linkUrl !== "";
+const isExternal = /^https?:\/\//.test(linkUrl);
+
+// 访客关闭后记住这个标识。改 id 或改公告内容都会让公告重新出现。
+let hash = 0;
+for (const char of text) {
+	hash = (hash * 31 + (char.codePointAt(0) ?? 0)) >>> 0;
+}
+const announcementId = announcement?.id?.trim() || `a${hash.toString(36)}`;
+
+const typeConfig = {
+	info: {
+		icon: "material-symbols:info-outline-rounded",
+		border: "border-l-sky-500",
+		iconColor: "text-sky-500",
+	},
+	success: {
+		icon: "material-symbols:check-circle-outline-rounded",
+		border: "border-l-emerald-500",
+		iconColor: "text-emerald-500",
+	},
+	warning: {
+		icon: "material-symbols:warning-outline-rounded",
+		border: "border-l-amber-500",
+		iconColor: "text-amber-500",
+	},
+	error: {
+		icon: "material-symbols:error-outline-rounded",
+		border: "border-l-rose-500",
+		iconColor: "text-rose-500",
+	},
+} as const;
+
+const appearance = typeConfig[type] ?? typeConfig.info;
+---
+
+{enabled && (
+    <div
+        id="announcement-bar"
+        data-announcement-id={announcementId}
+        class:list={[
+            "card-base onload-animation mx-0 mb-3 flex items-start gap-2.5 border-l-4 px-4 py-3 text-sm md:mx-4",
+            appearance.border,
+        ]}
+    >
+        <Icon name={appearance.icon} class:list={["mt-0.5 shrink-0 text-[1.15rem]", appearance.iconColor]}></Icon>
+        <div class="min-w-0 flex-1 whitespace-pre-line break-words leading-relaxed text-black/70 dark:text-white/75">
+            <span>{text}</span>
+            {hasLink && (
+                <a
+                    class="ml-1 font-medium text-[var(--primary)] underline decoration-dotted underline-offset-2 transition hover:opacity-80"
+                    href={linkUrl}
+                    target={isExternal ? "_blank" : undefined}
+                    rel={isExternal ? "noopener" : undefined}
+                >{linkText}</a>
+            )}
+        </div>
+        {closable && (
+            <button
+                id="announcement-close"
+                type="button"
+                aria-label="关闭公告"
+                class="shrink-0 rounded-md p-1 text-black/35 transition hover:bg-black/5 hover:text-black/70 active:scale-90 dark:text-white/35 dark:hover:bg-white/10 dark:hover:text-white/70"
+            >
+                <Icon name="material-symbols:close-rounded" class="text-[1.1rem]"></Icon>
+            </button>
+        )}
+    </div>
+    <script is:inline>
+        (() => {
+            const bar = document.getElementById("announcement-bar");
+            if (!bar) return;
+            const key = "announcement-dismissed:" + (bar.dataset.announcementId || "default");
+            let dismissed = false;
+            try {
+                dismissed = localStorage.getItem(key) === "1";
+            } catch {}
+            if (dismissed) {
+                bar.remove();
+                return;
+            }
+            const button = document.getElementById("announcement-close");
+            if (!button) return;
+            button.addEventListener("click", () => {
+                bar.remove();
+                try {
+                    localStorage.setItem(key, "1");
+                } catch {}
+            });
+        })();
+    </script>
+)}

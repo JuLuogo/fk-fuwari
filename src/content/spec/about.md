@@ -1,9 +1,26 @@
-# About
-This is the demo site for [Fuwari](https://github.com/saicaca/fuwari).
+---
+title: 关于我
+---
 
-::github{repo="saicaca/fuwari"}
+# 关于我
 
-> ### Sources of images used in this site
-> - [Unsplash](https://unsplash.com/)
-> - [星と少女](https://www.pixiv.net/artworks/108916539) by [Stella](https://www.pixiv.net/users/93273965)
-> - [Rabbit - v1.4 Showcase](https://civitai.com/posts/586908) by [Rabbit_YourMajesty](https://civitai.com/user/Rabbit_YourMajesty)
+你好，我是 **付康FK**。
+
+## 这里是什么
+
+一个不设边界的自留地，用来记录生活、整理所学、存放还在生长的想法。
+
+写下去比写得完美更重要。
+
+## 关于本站
+
+- 构建工具：[Astro](https://astro.build/)
+- 主题：[Fuwari](https://github.com/saicaca/fuwari)
+- 内容管理：[Pages CMS](https://pagescms.org)
+- 代码托管：[GitHub](https://github.com/JuLuogo/fk-fuwari)
+
+## 联系我
+
+- GitHub：[JuLuogo](https://github.com/JuLuogo)
+
+::github{repo="JuLuogo/fk-fuwari"}

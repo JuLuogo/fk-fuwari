@@ -190,7 +190,15 @@ pinned: false
 
 工作流会在产物里放一个 `.nojekyll`，确保 `_astro/` 这类下划线目录能正常访问。
 
-如果用了自定义域名，记得同步修改 `astro.config.mjs` 里的 `site`（影响 sitemap / RSS / 分享卡片）。
+**地址要对得上**，否则样式和图片会 404：
+
+| 站点形式 | astro.config.mjs 要改的 |
+| --- | --- |
+| 自定义域名（如 `https://fk.example.com/`） | `site: "https://fk.example.com/"`，`base: "/"` |
+| 用户主页仓库（`<用户名>.github.io`） | `site: "https://<用户名>.github.io/"`，`base: "/"` |
+| 项目页（`https://<用户名>.github.io/<仓库名>/`） | `site: "https://<用户名>.github.io"`，`base: "/<仓库名>/"` |
+
+改完推一次，触发自动构建即可。
 
 ### 部署方式 B：继续用 Vercel
 

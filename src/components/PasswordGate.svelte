@@ -57,6 +57,22 @@ function escapeHtml(text: string) {
 		.replace(/"/g, "&quot;");
 }
 
+/**
+ * innerHTML 注入的 <script> 不会执行，但正文里可能带需要运行的脚本
+ * （比如 GitHub 仓库卡片的元数据请求），所以换成一个新节点再插一次。
+ */
+function runInjectedScripts() {
+	if (!bodyEl) return;
+	for (const old of Array.from(bodyEl.querySelectorAll("script"))) {
+		const script = document.createElement("script");
+		for (const attr of Array.from(old.attributes)) {
+			script.setAttribute(attr.name, attr.value);
+		}
+		script.textContent = old.textContent ?? "";
+		old.replaceWith(script);
+	}
+}
+
 /** 解锁后重建右侧目录（加密文章的目录在构建期被刻意置空） */
 function rebuildToc(headings: UnlockedPostContent["headings"]) {
 	const host = document.querySelector("table-of-contents");
@@ -114,7 +130,10 @@ async function unlock() {
 
 		unlocked = true;
 		await tick();
-		if (bodyEl) bodyEl.innerHTML = content.html || "";
+		if (bodyEl) {
+			bodyEl.innerHTML = content.html || "";
+			runInjectedScripts();
+		}
 		rebuildToc(content.headings || []);
 	} catch {
 		// AES-GCM 认证失败无法区分「密码错」和「密文被改」，统一提示

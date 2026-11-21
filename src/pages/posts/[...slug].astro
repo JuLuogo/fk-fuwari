@@ -34,31 +34,17 @@ const { remarkPluginFrontmatter } = await entry.render();
 
 // 加密文章有两种来源：
 // 1) frontmatter 里填了「文章密码」-> 这篇就是加密文章，每次构建都用当前正文重新加密
-//    （新建文章时直接填密码保存即可，不需要等按钮、也不依赖「已加密」开关）
-// 2) 没填密码、但打开了「已加密」-> 用「加密这篇文章」按钮 / pnpm lock-post 生成的密文 JSON
+//    （新建文章时直接填密码保存即可，不需要等按钮、也不依赖「私密模式」开关）
+// 2) 没填密码、但打开了「私密模式」-> 用「加密这篇文章」按钮 / pnpm lock-post 生成的密文 JSON
 const encryptedPayloads = import.meta.glob<EncryptedPostPayload>(
 	"/src/data/encrypted/*.json",
 	{ eager: true, import: "default" },
 );
-// 密码来源（优先级从高到低）：
-//   1) frontmatter 的 password（写进仓库，最简单）
-//   2) 环境变量 POST_PASSWORDS（JSON 映射 slug -> 密码，放 GitHub Actions Secret 里，仓库看不到）
-//   3) 「加密这篇文章」按钮 / pnpm lock-post 产出的密文 JSON
-function readPasswordFromEnv(postSlug: string): string {
-	const raw = process.env.POST_PASSWORDS ?? "";
-	if (!raw.trim()) return "";
-	try {
-		const map = JSON.parse(raw) as Record<string, string>;
-		return String(map[postSlug] ?? "").trim();
-	} catch {
-		console.warn("[encrypted-post] POST_PASSWORDS 不是合法 JSON，已忽略");
-		return "";
-	}
-}
-
-const envPassword = readPasswordFromEnv(entry.slug);
-const password = (entry.data.password ?? "").trim() || envPassword;
-const isEncrypted = password !== "" || entry.data.encrypted === true;
+// 密码来源只有两种：
+//   1) frontmatter 里的「文章密码」-> 构建期重新加密（密码会进仓库）
+//   2) 没填密码但打开了「私密模式」-> 用「加密这篇文章」按钮 / pnpm lock-post 产出的密文 JSON
+const password = (entry.data.password ?? "").trim();
+const isEncrypted = isPostEncrypted(entry.data);
 let payload: EncryptedPostPayload | null = null;
 
 if (isEncrypted) {

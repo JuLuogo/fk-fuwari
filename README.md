@@ -137,35 +137,15 @@ pnpm new-post   # 用脚本新建一篇文章
 
 **代价**：密文是加密那一刻的快照，改了正文要**再点一次按钮**重新加密。
 
-### 三种方式的优先级
+### 两种方式的优先级
 
 ```
-frontmatter 的「文章密码」  →  构建期加密（最简单，但密码进仓库）
+frontmatter 的「文章密码」        →  构建期加密（最简单，但密码进仓库）
         ↓ 没有
-环境变量 POST_PASSWORDS     →  构建期加密（密码放 Actions Secret，全自动）
-        ↓ 没有
-src/data/encrypted/<slug>.json → 用按钮 / pnpm lock-post 产出的密文
+src/data/encrypted/<slug>.json   →  用按钮 / pnpm lock-post 产出的密文
         ↓ 没有
 显示「这篇私密文章还没设置密码」
 ```
-
-### 方式三：密码放 GitHub Actions Secret（全自动，密码也不进仓库）
-
-适合长期维护的私密文章。新建时打开「私密模式」，然后到
-**GitHub → Settings → Secrets and variables → Actions → New repository secret**，
-建一个名为 `POST_PASSWORDS` 的 secret，值是 slug 到密码的 JSON：
-
-```json
-{ "my-private-post": "密码A", "another-post": "密码B" }
-```
-
-之后每次构建都会用这个映射里对应 slug 的密码**在构建期自动加密**：
-
-- 新文章建好、secret 加好 → 第一次构建就是加密的，没有明文上线
-- 改正文、改密码都自动生效，**不需要点按钮**
-- 本地开发没有这个环境变量时会回落到 `src/data/encrypted/` 里的密文（没有就显示"还没设置密码"）
-
-密钥只在 Actions 运行时注入，仓库和产物里都看不到。
 
 ### 本地加密
 

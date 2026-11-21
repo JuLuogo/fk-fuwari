@@ -90,6 +90,46 @@ pnpm new-post   # 用脚本新建一篇文章
 - 上传的图片统一存放在 `public/images/`，写入文章里的路径是 `/images/xxx.jpg`。
 - 头像是构建期资源，放在 `src/assets/images/avatar.jpg`，需要替换时直接覆盖同名文件即可（站点图标 `public/favicon/` 目前由它生成）。
 
+## 加密文章（单篇密码保护）
+
+正文在**构建期**用密码派生的密钥加密（PBKDF2-SHA256 60 万次 + AES-256-GCM），仓库里只有密文；
+访客在浏览器里输入密码、由 WebCrypto 解密后渲染。**明文和密码都不会提交到仓库**。
+
+### 怎么用
+
+1. 正常写一篇文章（本地或 Pages CMS 都行），在 frontmatter 里加密码：
+
+   ```yaml
+   password: 你的密码
+   passwordHint: 可选，显示在解锁框里的提示
+   ```
+
+2. 本地执行：
+
+   ```bash
+   pnpm lock-post <slug>          # 例如 pnpm lock-post my-secret-note
+   pnpm lock-post <slug> --password 1234   # 也可以把密码写在命令行，不落到文件里
+   ```
+
+3. 脚本会做四件事：把明文临时放回内容目录跑一次构建 → 从产物里抠出**主题渲染好的正文 HTML**
+   → 加密写入 `src/data/encrypted/<slug>.json` → 把文章换成只含 frontmatter 的 stub。
+   明文与密码留在 `private/posts/<slug>.md`（已 gitignore）。
+4. 提交 `src/content/posts/<slug>.md`（stub）和 `src/data/encrypted/<slug>.json`（密文）即可。
+
+> 仓库里自带一篇示例 `encrypted-demo`（密码 `fk-2026`），可以直接删掉：
+> 删掉 `src/content/posts/encrypted-demo.md` 和 `src/data/encrypted/encrypted-demo.json` 即可。
+
+### 之后要改这篇加密文章
+
+编辑 `private/posts/<slug>.md`，重新执行 `pnpm lock-post <slug>`（会自动重建密文）。
+
+### 需要注意
+
+- WebCrypto 需要 **HTTPS 或 localhost**，用 `http://局域网IP` 打开时无法解密
+- 密码忘记无法找回（密钥由密码派生，没有后门），只能重新 `lock-post` 换一个密码
+- 加密文章的正文不会进站内搜索、RSS 只有标题和摘要，目录在解锁后由浏览器重建
+- 明文只存在浏览器内存里，不会写 localStorage / sessionStorage
+
 ## 也可以直接写 Markdown
 
 ```markdown

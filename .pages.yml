@@ -78,6 +78,15 @@ content:
         label: 置顶
         type: boolean
         description: 打开后会排在首页和归档最前面，并在卡片和文章页显示置顶标记
+      - name: passwordHint
+        label: 密码提示
+        type: string
+        description: 加密文章才有用，会显示在解锁框里
+      - name: encrypted
+        label: 已加密
+        type: boolean
+        readonly: true
+        description: 由 pnpm lock-post 自动写入，请不要手动改
       - name: draft
         label: 草稿
         type: boolean

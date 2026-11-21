@@ -17,6 +17,9 @@ pnpm-debug.log*
 .env
 .env.production
 
+# 加密文章的明文与密码（由 pnpm lock-post 生成，绝不提交）
+private/
+
 # macOS-specific files
 .DS_Store
 

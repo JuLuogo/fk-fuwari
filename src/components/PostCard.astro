@@ -21,6 +21,7 @@ interface Props {
 	description: string;
 	draft: boolean;
 	pinned?: boolean;
+	encrypted?: boolean;
 	style: string;
 }
 const {
@@ -34,6 +35,7 @@ const {
 	image,
 	description,
 	pinned = false,
+	encrypted = false,
 	style,
 } = Astro.props;
 const className = Astro.props.class;
@@ -57,6 +59,9 @@ const { remarkPluginFrontmatter } = await entry.render();
                 <Icon name="material-symbols:keep-rounded" class="text-[1rem]"></Icon>{i18n(I18nKey.pinned)}
             </span>}
             {title}
+            {encrypted && <span class="ml-2 inline-flex translate-y-[-0.2rem] items-center align-middle text-black/35 dark:text-white/35" title="加密文章">
+                <Icon name="material-symbols:lock-outline" class="text-[1.5rem]"></Icon>
+            </span>}
             <Icon class="inline text-[2rem] text-[var(--primary)] md:hidden translate-y-0.5 absolute" name="material-symbols:chevron-right-rounded" ></Icon>
             <Icon class="text-[var(--primary)] text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" name="material-symbols:chevron-right-rounded"></Icon>
         </a>
@@ -69,8 +74,8 @@ const { remarkPluginFrontmatter } = await entry.render();
             { description || remarkPluginFrontmatter.excerpt }
         </div>
 
-        <!-- word count and read time  -->
-        <div class="text-sm text-black/30 dark:text-white/30 flex gap-4 transition">
+        <!-- word count and read time（加密文章不显示，避免出现「0 字」） -->
+        {!encrypted && <div class="text-sm text-black/30 dark:text-white/30 flex gap-4 transition">
             <div>
                 {remarkPluginFrontmatter.words} {" " + i18n(remarkPluginFrontmatter.words === 1 ? I18nKey.wordCount : I18nKey.wordsCount)}
             </div>
@@ -78,7 +83,7 @@ const { remarkPluginFrontmatter } = await entry.render();
             <div>
                 {remarkPluginFrontmatter.minutes} {" " + i18n(remarkPluginFrontmatter.minutes === 1 ? I18nKey.minuteCount : I18nKey.minutesCount)}
             </div>
-        </div>
+        </div>}
 
     </div>
 

@@ -35,6 +35,10 @@ const postsCollection = defineCollection({
 		updated: optionalDate,
 		draft: booleanOrFalse,
 		pinned: booleanOrFalse,
+		// 加密文章：正文以密文形式放在 src/data/encrypted/<slug>.json，
+		// md 只是 frontmatter + 空正文的 stub（密码从不进仓库）
+		encrypted: booleanOrFalse,
+		passwordHint: stringOrEmpty,
 		description: stringOrEmpty,
 		image: stringOrEmpty,
 		tags: stringList,

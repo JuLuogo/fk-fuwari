@@ -1,129 +1,129 @@
 <script lang="ts">
-	import type {
-		EncryptedPostPayload,
-		UnlockedPostContent,
-	} from "@utils/encrypted-format";
-	import { onMount, tick } from "svelte";
+import type {
+	EncryptedPostPayload,
+	UnlockedPostContent,
+} from "@utils/encrypted-format";
+import { onMount, tick } from "svelte";
 
-	interface Props {
-		payload?: EncryptedPostPayload | null;
-		hint?: string;
+interface Props {
+	payload?: EncryptedPostPayload | null;
+	hint?: string;
+}
+
+let { payload = null, hint = "" }: Props = $props();
+
+let password = $state("");
+let busy = $state(false);
+let error = $state("");
+let unlocked = $state(false);
+let bodyEl = $state<HTMLDivElement | null>(null);
+let inputEl = $state<HTMLInputElement | null>(null);
+
+onMount(() => {
+	inputEl?.focus();
+});
+
+function base64ToBytes(base64: string) {
+	const binary = atob(base64);
+	const bytes = new Uint8Array(binary.length);
+	for (let i = 0; i < binary.length; i++) {
+		bytes[i] = binary.charCodeAt(i);
 	}
+	return bytes;
+}
 
-	let { payload = null, hint = "" }: Props = $props();
+async function deriveKey(passphrase: string, salt: Uint8Array, iter: number) {
+	const baseKey = await crypto.subtle.importKey(
+		"raw",
+		new TextEncoder().encode(passphrase),
+		"PBKDF2",
+		false,
+		["deriveKey"],
+	);
+	return crypto.subtle.deriveKey(
+		{ name: "PBKDF2", salt, iterations: iter, hash: "SHA-256" },
+		baseKey,
+		{ name: "AES-GCM", length: 256 },
+		false,
+		["decrypt"],
+	);
+}
 
-	let password = $state("");
-	let busy = $state(false);
-	let error = $state("");
-	let unlocked = $state(false);
-	let bodyEl = $state<HTMLDivElement | null>(null);
-	let inputEl = $state<HTMLInputElement | null>(null);
+function escapeHtml(text: string) {
+	return text
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;");
+}
 
-	onMount(() => {
-		inputEl?.focus();
-	});
-
-	function base64ToBytes(base64: string) {
-		const binary = atob(base64);
-		const bytes = new Uint8Array(binary.length);
-		for (let i = 0; i < binary.length; i++) {
-			bytes[i] = binary.charCodeAt(i);
-		}
-		return bytes;
-	}
-
-	async function deriveKey(passphrase: string, salt: Uint8Array, iter: number) {
-		const baseKey = await crypto.subtle.importKey(
-			"raw",
-			new TextEncoder().encode(passphrase),
-			"PBKDF2",
-			false,
-			["deriveKey"],
-		);
-		return crypto.subtle.deriveKey(
-			{ name: "PBKDF2", salt, iterations: iter, hash: "SHA-256" },
-			baseKey,
-			{ name: "AES-GCM", length: 256 },
-			false,
-			["decrypt"],
-		);
-	}
-
-	function escapeHtml(text: string) {
-		return text
-			.replace(/&/g, "&amp;")
-			.replace(/</g, "&lt;")
-			.replace(/>/g, "&gt;")
-			.replace(/"/g, "&quot;");
-	}
-
-	/** 解锁后重建右侧目录（加密文章的目录在构建期被刻意置空） */
-	function rebuildToc(headings: UnlockedPostContent["headings"]) {
-		const host = document.querySelector("table-of-contents");
-		if (!host || headings.length === 0) return;
-		const minDepth = Math.min(...headings.map((h) => h.depth));
-		host.innerHTML = headings
-			.map((heading) => {
-				const indent =
-					heading.depth === minDepth
-						? ""
-						: heading.depth === minDepth + 1
-							? "ml-4"
-							: "ml-8";
-				return `<a href="#${heading.slug}" class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-[var(--toc-btn-hover)] active:bg-[var(--toc-btn-active)] py-2">
+/** 解锁后重建右侧目录（加密文章的目录在构建期被刻意置空） */
+function rebuildToc(headings: UnlockedPostContent["headings"]) {
+	const host = document.querySelector("table-of-contents");
+	if (!host || headings.length === 0) return;
+	const minDepth = Math.min(...headings.map((h) => h.depth));
+	host.innerHTML = headings
+		.map((heading) => {
+			const indent =
+				heading.depth === minDepth
+					? ""
+					: heading.depth === minDepth + 1
+						? "ml-4"
+						: "ml-8";
+			return `<a href="#${heading.slug}" class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-[var(--toc-btn-hover)] active:bg-[var(--toc-btn-active)] py-2">
 					<div class="transition w-5 h-5 shrink-0 rounded-lg flex items-center justify-center font-bold ${indent}">
 						<div class="transition w-2 h-2 rounded-[0.1875rem] bg-[var(--toc-badge-bg)]"></div>
 					</div>
 					<div class="transition text-sm text-50">${escapeHtml(heading.text)}</div>
 				</a>`;
-			})
-			.join("");
+		})
+		.join("");
+}
+
+async function unlock() {
+	if (busy) return;
+	if (!password) {
+		error = "请输入密码";
+		return;
+	}
+	if (!payload) {
+		error = "没有找到加密数据，可能是文章还没执行过 pnpm lock-post";
+		return;
+	}
+	if (!globalThis.crypto?.subtle) {
+		error = "当前环境不支持 WebCrypto，请用 HTTPS 或 localhost 打开";
+		return;
 	}
 
-	async function unlock() {
-		if (busy) return;
-		if (!password) {
-			error = "请输入密码";
-			return;
-		}
-		if (!payload) {
-			error = "没有找到加密数据，可能是文章还没执行过 pnpm lock-post";
-			return;
-		}
-		if (!globalThis.crypto?.subtle) {
-			error = "当前环境不支持 WebCrypto，请用 HTTPS 或 localhost 打开";
-			return;
-		}
+	busy = true;
+	error = "";
+	try {
+		const key = await deriveKey(
+			password,
+			base64ToBytes(payload.salt),
+			payload.iter,
+		);
+		const plain = await crypto.subtle.decrypt(
+			{ name: "AES-GCM", iv: base64ToBytes(payload.iv), tagLength: 128 },
+			key,
+			base64ToBytes(payload.ct),
+		);
+		const content = JSON.parse(
+			new TextDecoder().decode(plain),
+		) as UnlockedPostContent;
 
-		busy = true;
-		error = "";
-		try {
-			const key = await deriveKey(
-				password,
-				base64ToBytes(payload.salt),
-				payload.iter,
-			);
-			const plain = await crypto.subtle.decrypt(
-				{ name: "AES-GCM", iv: base64ToBytes(payload.iv), tagLength: 128 },
-				key,
-				base64ToBytes(payload.ct),
-			);
-			const content = JSON.parse(
-				new TextDecoder().decode(plain),
-			) as UnlockedPostContent;
-
-			unlocked = true;
-			await tick();
-			if (bodyEl) bodyEl.innerHTML = content.html || "";
-			rebuildToc(content.headings || []);
-		} catch {
-			// AES-GCM 认证失败无法区分「密码错」和「密文被改」，统一提示
-			error = "密码错误";
-			password = "";
-		} finally {
-			busy = false;
-		}
+		unlocked = true;
+		await tick();
+		if (bodyEl) bodyEl.innerHTML = content.html || "";
+		rebuildToc(content.headings || []);
+	} catch {
+		// AES-GCM 认证失败无法区分「密码错」和「密文被改」，统一提示
+		error = "密码错误";
+		password = "";
+	} finally {
+		busy = false;
 	}
+}
 </script>
 
 {#if !unlocked}

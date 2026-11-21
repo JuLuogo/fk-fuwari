@@ -94,43 +94,59 @@ pnpm new-post   # 用脚本新建一篇文章
 
 ## 加密文章（单篇密码保护）
 
-正文在**构建期**用密码派生的密钥加密（PBKDF2-SHA256 60 万次 + AES-256-GCM），仓库里只有密文；
-访客在浏览器里输入密码、由 WebCrypto 解密后渲染。**明文和密码都不会提交到仓库**。
+文章正文在**构建期**用密码派生的密钥加密（PBKDF2-SHA256 60 万次 + AES-256-GCM），
+访客在浏览器里输入密码、由 WebCrypto 解密后渲染。
 
-### 怎么用
+设计取舍（按你的选择）：**明文正文留在仓库里**，密码只在加密那一次使用、不会写进仓库。
+也就是说「密码」挡住的是网站阅读，不是仓库查看——别拿它存真正的机密。
 
-1. 正常写一篇文章（本地或 Pages CMS 都行），在 frontmatter 里加密码：
+### 在 Pages CMS 里加密（推荐）
 
-   ```yaml
-   password: 你的密码
-   passwordHint: 可选，显示在解锁框里的提示
-   ```
+1. 正常写文章、保存（正文就是普通 Markdown）。
+2. 打开这篇文章的编辑页，点右上角 **「加密这篇文章」** 按钮。
+3. 弹窗里填文章密码 → 确定。Pages CMS 会触发
+   [`.github/workflows/encrypt-post.yml`](.github/workflows/encrypt-post.yml)：
+   用主题管线渲染正文 → 加密 → 提交 `src/data/encrypted/<slug>.json` 与
+   `encrypted: true` → 顺手触发一次发布构建。
+4. 一两分钟后刷新站点，这篇文章就需要密码才能看了。
 
-2. 本地执行：
+密码只会出现在那次 Actions 运行的临时文件里（已 `add-mask`），用完即删，不会提交。
 
-   ```bash
-   pnpm lock-post <slug>          # 例如 pnpm lock-post my-secret-note
-   pnpm lock-post <slug> --password 1234   # 也可以把密码写在命令行，不落到文件里
-   ```
+### 在本地加密
 
-3. 脚本会做四件事：把明文临时放回内容目录跑一次构建 → 从产物里抠出**主题渲染好的正文 HTML**
-   → 加密写入 `src/data/encrypted/<slug>.json` → 把文章换成只含 frontmatter 的 stub。
-   明文与密码留在 `private/posts/<slug>.md`（已 gitignore）。
-4. 提交 `src/content/posts/<slug>.md`（stub）和 `src/data/encrypted/<slug>.json`（密文）即可。
+```bash
+pnpm lock-post <slug> --password 你的密码
+```
 
-> 仓库里自带一篇示例 `encrypted-demo`（密码 `fk-2026`），可以直接删掉：
-> 删掉 `src/content/posts/encrypted-demo.md` 和 `src/data/encrypted/encrypted-demo.json` 即可。
+不传 `--password` 时会依次读环境变量 `LOCK_POST_PASSWORD`、frontmatter 里的 `password`。
 
-### 之后要改这篇加密文章
+脚本做的事：把文章 frontmatter 里的 `encrypted` 临时去掉 → 跑一次构建 → 从产物里抠出
+**主题渲染好的正文 HTML**（所以代码块、GitHub 卡片、KaTeX 全都和普通文章一样）→
+加密写入 `src/data/encrypted/<slug>.json` → 给 frontmatter 加上 `encrypted: true`、
+删掉用完的 `password`，正文保持不动。
 
-编辑 `private/posts/<slug>.md`，重新执行 `pnpm lock-post <slug>`（会自动重建密文）。
+### 改了正文要重新加密
+
+密文是「上一次加密时的快照」，改完正文（或在 CMS 里改了正文）之后要**再点一次「加密这篇文章」**
+（或本地重跑 `pnpm lock-post`），否则线上看到的还是旧内容。
+
+### 相关字段
+
+| 字段 | 说明 |
+| --- | --- |
+| `encrypted` | 打开后正文改用密文渲染；点「加密这篇文章」会自动打开，也可以手动关掉 |
+| `passwordHint` | 可选，显示在解锁框里的密码提示 |
+
+> 仓库里自带一篇示例 `encrypted-demo`（密码 `fk-2026`），删掉
+> `src/content/posts/encrypted-demo.md` 和 `src/data/encrypted/encrypted-demo.json` 即可移除。
 
 ### 需要注意
 
 - WebCrypto 需要 **HTTPS 或 localhost**，用 `http://局域网IP` 打开时无法解密
-- 密码忘记无法找回（密钥由密码派生，没有后门），只能重新 `lock-post` 换一个密码
-- 加密文章的正文不会进站内搜索、RSS 只有标题和摘要，目录在解锁后由浏览器重建
+- 密码忘记无法找回（密钥由密码派生，没有后门），重新加密换一个密码即可
+- 加密文章的正文不进站内搜索；**RSS 里不会输出正文**，卡片上也不会显示摘要，只留一句「需要密码」
 - 明文只存在浏览器内存里，不会写 localStorage / sessionStorage
+- 密文是公开的（在站点 JS 和仓库 JSON 里），安全性取决于密码强度
 
 ## 也可以直接写 Markdown
 

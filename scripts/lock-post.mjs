@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 /**
- * 把一篇带密码的文章「锁定」成加密文章。
+ * 把一篇文章「加密」：正文渲染成 HTML 后用密码加密，只把密文写进仓库。
  *
  *   pnpm lock-post <slug> [--password <密码>] [--skip-build]
  *
- * 做四件事：
- *   1. 读明文（优先 private/posts/<slug>.md，否则用 src/content/posts/<slug>.md），
- *      密码取自 frontmatter 的 password 或 --password 参数
- *   2. 把明文临时放回内容目录、跑一次构建，从 dist/posts/<slug>/index.html 里
- *      抠出「正文 HTML + 目录 headings」（保证和主题的 Markdown 渲染完全一致）
- *   3. PBKDF2-SHA256(600000) + AES-256-GCM 加密，写 src/data/encrypted/<slug>.json
- *   4. 把内容目录里的文章换成 stub（frontmatter 保留、去掉 password、正文清空）
+ * 过程（四步）：
+ *   1. 读 src/content/posts/<slug>.md（正文就是明文，留在仓库里没问题）
+ *   2. 临时去掉这个文件的 encrypted 标记、跑一次构建，用主题自己的 Markdown 管线
+ *      渲染出正文 HTML 与标题（这样加密内容和普通文章长得完全一样）
+ *   3. PBKDF2-SHA256(60 万次) + AES-256-GCM 加密，写 src/data/encrypted/<slug>.json
+ *   4. 把文章 frontmatter 加上 encrypted: true、去掉用完的 password，正文原样保留
  *
- * 提交物只有 stub 与密文 JSON；明文和密码留在 gitignored 的 private/posts/ 里。
+ * 密码来源（按优先级）：--password 参数 > 环境变量 LOCK_POST_PASSWORD > frontmatter 的 password
+ * 密码本身不会被写进仓库（frontmatter 里的 password 用完即删），明文正文会保留在仓库里。
  */
 
 import { execSync } from "node:child_process";
@@ -21,7 +21,6 @@ import fs from "node:fs";
 import path from "node:path";
 
 const ROOT = process.cwd();
-const PRIVATE_DIR = path.join(ROOT, "private", "posts");
 const CONTENT_DIR = path.join(ROOT, "src", "content", "posts");
 const ENCRYPTED_DIR = path.join(ROOT, "src", "data", "encrypted");
 
@@ -55,8 +54,8 @@ function fail(message) {
 if (!slug) {
 	console.log(`用法: pnpm lock-post <slug> [--password <密码>] [--skip-build]
 
-  <slug>            文章 slug（文件名去掉 .md），例如 encrypted-demo
-  --password <密码>  临时指定密码；不传则读取 frontmatter 里的 password
+  <slug>            文章 slug（文件名去掉 .md），例如 my-secret-note
+  --password <密码>  密码；不传则依次读环境变量 LOCK_POST_PASSWORD、frontmatter 的 password
   --skip-build      复用已有的 dist/posts/<slug>/index.html，不重新构建（调试用）
 `);
 	process.exit(1);
@@ -81,7 +80,6 @@ function parseBlocks(frontmatter) {
 			blocks.push(current);
 		}
 	});
-	// 前一个 block 的结束行 = 下一个 block 的开始行
 	for (let i = 0; i < blocks.length - 1; i++) {
 		blocks[i].end = blocks[i + 1].start;
 	}
@@ -129,7 +127,6 @@ function withFrontmatterKey(frontmatter, key, value) {
 			kept.push(`${indent}${key}: ${value}`);
 			return;
 		}
-		// 旧值可能是多行，整段丢掉
 		if (index > block.start && index < block.end) return;
 		kept.push(line);
 	});
@@ -199,46 +196,49 @@ function extractHeadings(html) {
 	let match;
 	while ((match = re.exec(html)) !== null) {
 		const depth = Number(match[1]);
-		const slug = match[2];
+		const id = match[2];
 		// 去掉 rehype-autolink-headings 追加的锚点（<a class="anchor">#</a> 或 <span class="anchor">）
 		const inner = match[3]
 			.replace(/<a[^>]*class="[^"]*\banchor\b[^"]*"[^>]*>[\s\S]*?<\/a>/g, "")
 			.replace(/<span[^>]*class="[^"]*\banchor\b[^"]*"[^>]*>[\s\S]*?<\/span>/g, "");
-		headings.push({ depth, slug, text: decodeEntities(inner) });
+		headings.push({ depth, slug: id, text: decodeEntities(inner) });
 	}
 	return headings;
 }
 
 /* ------------------------------ 主流程 ------------------------------ */
 
-const privatePath = path.join(PRIVATE_DIR, `${slug}.md`);
-const contentPath = path.join(CONTENT_DIR, `${slug}.md`);
+const postPath = path.join(CONTENT_DIR, `${slug}.md`);
 const encryptedPath = path.join(ENCRYPTED_DIR, `${slug}.json`);
 
-const sourcePath = fs.existsSync(privatePath) ? privatePath : contentPath;
-if (!fs.existsSync(sourcePath)) {
-	fail(`找不到文章：${path.relative(ROOT, privatePath)} 或 ${path.relative(ROOT, contentPath)}`);
+if (!fs.existsSync(postPath)) {
+	fail(`找不到文章：${path.relative(ROOT, postPath)}`);
 }
 
-const raw = fs.readFileSync(sourcePath, "utf8");
+const raw = fs.readFileSync(postPath, "utf8");
 const { frontmatter, body } = splitFrontmatter(raw);
-const password = passwordFromCli ?? getFrontmatterValue(frontmatter, "password");
+const password =
+	passwordFromCli ||
+	process.env.LOCK_POST_PASSWORD ||
+	getFrontmatterValue(frontmatter, "password");
 
 if (!password) {
-	fail("没有密码：请在 frontmatter 里写 password: xxx，或用 --password 传入");
+	fail("没有密码：用 --password 传入，或设置 LOCK_POST_PASSWORD，或在 frontmatter 里写 password: xxx");
 }
 if (!body.trim()) {
 	fail("正文是空的，没什么可加密的");
 }
 
-// 明文永远留一份在 private/（gitignored），作为后续编辑的唯一来源
-fs.mkdirSync(PRIVATE_DIR, { recursive: true });
-fs.writeFileSync(privatePath, raw, "utf8");
-
-// 临时把明文放回内容目录，用主题自己的渲染管线生成正文 HTML
-const publicFrontmatter = stripFrontmatterKeys(frontmatter, ["password", "encrypted"]);
-fs.mkdirSync(CONTENT_DIR, { recursive: true });
-fs.writeFileSync(contentPath, `---\n${publicFrontmatter}\n---\n\n${body.trim()}\n`, "utf8");
+// 临时版本：去掉 encrypted（这样页面才会渲染正文用于提取）和 password（用过即删）
+const plainFrontmatter = stripFrontmatterKeys(frontmatter, [
+	"password",
+	"encrypted",
+]);
+fs.writeFileSync(
+	postPath,
+	`---\n${plainFrontmatter}\n---\n\n${body.trim()}\n`,
+	"utf8",
+);
 
 try {
 	if (!skipBuild) {
@@ -247,7 +247,9 @@ try {
 	}
 
 	const pagePath = path.join(ROOT, "dist", "posts", slug, "index.html");
-	if (!fs.existsSync(pagePath)) fail(`构建产物里没有这篇文章：${path.relative(ROOT, pagePath)}`);
+	if (!fs.existsSync(pagePath)) {
+		fail(`构建产物里没有这篇文章：${path.relative(ROOT, pagePath)}`);
+	}
 
 	const page = fs.readFileSync(pagePath, "utf8");
 	const beginIndex = page.indexOf(BEGIN_MARK);
@@ -267,15 +269,20 @@ try {
 	fs.writeFileSync(encryptedPath, JSON.stringify(payload, null, "\t") + "\n", "utf8");
 
 	console.log(`✓ 已加密：${path.relative(ROOT, encryptedPath)}`);
-	console.log(`  正文 ${html.length} 字符 · 目录 ${headings.length} 个标题 · 密文 ${payload.ct.length} 字符`);
+	console.log(
+		`  正文 ${html.length} 字符 · 目录 ${headings.length} 个标题 · 密文 ${payload.ct.length} 字符`,
+	);
 } finally {
-	// 无论成功失败，都把内容目录换成 stub，避免明文被提交
-	const stubFrontmatter = withFrontmatterKey(
+	// 写回文章：加上 encrypted: true、去掉密码，正文（明文）原样保留在仓库里
+	const finalFrontmatter = withFrontmatterKey(
 		stripFrontmatterKeys(frontmatter, ["password"]),
 		"encrypted",
 		"true",
 	);
-	fs.writeFileSync(contentPath, `---\n${stubFrontmatter}\n---\n`, "utf8");
-	console.log(`✓ 已写回 stub：${path.relative(ROOT, contentPath)}`);
-	console.log(`  明文保留在：${path.relative(ROOT, privatePath)}（该目录已 gitignore）`);
+	fs.writeFileSync(
+		postPath,
+		`---\n${finalFrontmatter}\n---\n\n${body.trim()}\n`,
+		"utf8",
+	);
+	console.log(`✓ 已标记加密：${path.relative(ROOT, postPath)}（正文明文保留在仓库）`);
 }

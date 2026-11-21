@@ -98,8 +98,7 @@ content:
       - name: encrypted
         label: 已加密
         type: boolean
-        readonly: true
-        description: 由 pnpm lock-post 自动写入，请不要手动改
+        description: 打开后正文改用 src/data/encrypted 里的密文；点右上角「加密这篇文章」会自动打开
       - name: draft
         label: 草稿
         type: boolean
@@ -112,6 +111,17 @@ content:
           media: images
           path: public/images
           switcher: true
+    # 文章编辑页右上角的操作按钮
+    actions:
+      - name: encrypt-post
+        label: 加密这篇文章
+        scope: entry
+        workflow: encrypt-post.yml
+        fields:
+          - name: password
+            label: 文章密码（只在本次加密时使用，不会写进仓库）
+            type: text
+            required: true
 
   # 关于页面：对应 src/content/spec/about.md
   - name: about

@@ -24,17 +24,26 @@ export async function GET(context: APIContext) {
 		description: siteConfig.subtitle || "No description",
 		site: context.site ?? "https://fuwari.vercel.app",
 		items: blog.map((post) => {
-			const content =
-				typeof post.body === "string" ? post.body : String(post.body || "");
+			// 加密文章：正文不能出现在 RSS 里，否则等于把明文发出去了
+			const isEncrypted = post.data.encrypted === true;
+			const content = isEncrypted
+				? ""
+				: typeof post.body === "string"
+					? post.body
+					: String(post.body || "");
 			const cleanedContent = stripInvalidXmlChars(content);
 			return {
 				title: post.data.title,
 				pubDate: post.data.published,
-				description: post.data.description || "",
+				description:
+					post.data.description ||
+					(isEncrypted ? "这是一篇加密文章，请到网站输入密码查看。" : ""),
 				link: url(`/posts/${post.slug}/`),
-				content: sanitizeHtml(parser.render(cleanedContent), {
-					allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img"]),
-				}),
+				content: isEncrypted
+					? ""
+					: sanitizeHtml(parser.render(cleanedContent), {
+							allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img"]),
+						}),
 			};
 		}),
 		customData: `<language>${siteConfig.lang}</language>`,

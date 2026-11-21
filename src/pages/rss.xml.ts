@@ -1,5 +1,6 @@
 import rss from "@astrojs/rss";
 import { getSortedPosts } from "@utils/content-utils";
+import { isPostEncrypted } from "@utils/encrypted-post";
 import { url } from "@utils/url-utils";
 import type { APIContext } from "astro";
 import MarkdownIt from "markdown-it";
@@ -25,7 +26,7 @@ export async function GET(context: APIContext) {
 		site: context.site ?? "https://fuwari.vercel.app",
 		items: blog.map((post) => {
 			// 加密文章：正文不能出现在 RSS 里，否则等于把明文发出去了
-			const isEncrypted = post.data.encrypted === true;
+			const isEncrypted = isPostEncrypted(post.data);
 			const content = isEncrypted
 				? ""
 				: typeof post.body === "string"

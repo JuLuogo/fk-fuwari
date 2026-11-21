@@ -145,7 +145,16 @@ async function unlock() {
 }
 </script>
 
-{#if !unlocked}
+{#if !payload}
+	<div class="card-base onload-animation mb-6 flex flex-col items-center gap-3 px-6 py-10">
+		<div class="text-4xl select-none">🔒</div>
+		<div class="text-lg font-bold text-black/85 dark:text-white/85">这篇私密文章还没设置密码</div>
+		<div class="max-w-md text-center text-sm text-black/45 dark:text-white/45">
+			文章已被标记为加密，但还没有生成密文。作者在 Pages CMS 里对这篇文章点一次
+			「加密这篇文章」并填入密码后即可阅读。
+		</div>
+	</div>
+{:else if !unlocked}
 	<div class="card-base onload-animation mb-6 flex flex-col items-center gap-4 px-6 py-10">
 		<div class="text-center">
 			<div class="mb-2 text-4xl select-none">🔒</div>

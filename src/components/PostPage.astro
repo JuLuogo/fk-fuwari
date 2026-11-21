@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
+import { isPostEncrypted } from "@utils/encrypted-post";
 import { getPostUrlBySlug } from "@utils/url-utils";
 import PostCard from "./PostCard.astro";
 
@@ -22,7 +23,7 @@ const interval = 50;
                 description={entry.data.description}
                 draft={entry.data.draft}
                 pinned={entry.data.pinned}
-                encrypted={entry.data.encrypted}
+                encrypted={isPostEncrypted(entry.data)}
                 class:list="onload-animation"
                 style={`animation-delay: calc(var(--content-delay) + ${delay++ * interval}ms);`}
         ></PostCard>

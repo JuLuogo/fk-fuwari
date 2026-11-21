@@ -109,6 +109,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
+        # 私密文章可以不用在仓库里写密码：把 {"文章slug":"密码"} 存进 Secrets.POST_PASSWORDS 即可
+        env:
+          POST_PASSWORDS: ${{ secrets.POST_PASSWORDS }}
         run: pnpm build
 
       - name: 发布到 pages 分支

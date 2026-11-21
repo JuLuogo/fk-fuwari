@@ -16,6 +16,7 @@ import PostMetadata from "../../components/PostMeta.astro";
 import { profileConfig, siteConfig } from "../../config";
 import { formatDateToYYYYMMDD } from "../../utils/date-utils";
 import { encryptPostContent } from "../../utils/encrypt-post";
+import { isPostEncrypted } from "../../utils/encrypted-post";
 import type { EncryptedPostPayload } from "../../utils/encrypted-format";
 
 export async function getStaticPaths() {
@@ -39,7 +40,24 @@ const encryptedPayloads = import.meta.glob<EncryptedPostPayload>(
 	"/src/data/encrypted/*.json",
 	{ eager: true, import: "default" },
 );
-const password = (entry.data.password ?? "").trim();
+// 密码来源（优先级从高到低）：
+//   1) frontmatter 的 password（写进仓库，最简单）
+//   2) 环境变量 POST_PASSWORDS（JSON 映射 slug -> 密码，放 GitHub Actions Secret 里，仓库看不到）
+//   3) 「加密这篇文章」按钮 / pnpm lock-post 产出的密文 JSON
+function readPasswordFromEnv(postSlug: string): string {
+	const raw = process.env.POST_PASSWORDS ?? "";
+	if (!raw.trim()) return "";
+	try {
+		const map = JSON.parse(raw) as Record<string, string>;
+		return String(map[postSlug] ?? "").trim();
+	} catch {
+		console.warn("[encrypted-post] POST_PASSWORDS 不是合法 JSON，已忽略");
+		return "";
+	}
+}
+
+const envPassword = readPasswordFromEnv(entry.slug);
+const password = (entry.data.password ?? "").trim() || envPassword;
 const isEncrypted = password !== "" || entry.data.encrypted === true;
 let payload: EncryptedPostPayload | null = null;
 

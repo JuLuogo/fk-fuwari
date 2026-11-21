@@ -2,12 +2,14 @@
 title: 你好，世界
 published: 2026-11-20
 description: 这里是「付康FK」，欢迎来到我的博客。
-tags: ["随笔"]
+tags:
+  - 随笔
 category: 随笔
 draft: false
 pinned: false
+encrypted: true
+password: "1576586736"
 ---
-
 欢迎来到 **付康FK** 的个人博客 👋
 
 这里会记录：

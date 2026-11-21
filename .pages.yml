@@ -70,6 +70,20 @@ content:
         required: true
         options:
           format: yyyy-MM-dd
+      # ---- 加密相关（放在最前面，避免找不到）----
+      - name: encrypted
+        label: 已加密
+        type: boolean
+        description: 打开后这篇文章需要密码才能阅读（配合下面的「文章密码」）
+      - name: password
+        label: 文章密码
+        type: string
+        description: 填了密码并打开「已加密」，每次构建都会用最新正文自动加密；改密码直接改这里，改完保存即可
+      - name: passwordHint
+        label: 密码提示
+        type: string
+        description: 显示在解锁框里的密码提示（可选）
+
       - name: description
         label: 摘要
         type: text
@@ -91,18 +105,6 @@ content:
         label: 置顶
         type: boolean
         description: 打开后会排在首页和归档最前面，并在卡片和文章页显示置顶标记
-      - name: password
-        label: 文章密码
-        type: string
-        description: 填了密码并打开「已加密」，每次构建都会用最新正文自动加密（改正文、改密码都会自动生效）。注意：密码会写在仓库的 frontmatter 里
-      - name: passwordHint
-        label: 密码提示
-        type: string
-        description: 显示在解锁框里的密码提示（可选）
-      - name: encrypted
-        label: 已加密
-        type: boolean
-        description: 打开后正文改用 src/data/encrypted 里的密文；点右上角「加密这篇文章」会自动打开
       - name: draft
         label: 草稿
         type: boolean

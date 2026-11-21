@@ -57,6 +57,10 @@ pnpm new-post   # 用脚本新建一篇文章
 1. 打开 <https://app.pagescms.org>，用 GitHub 账号登录。
 2. 首次使用需要为 Pages CMS 安装 GitHub App，并授权 `JuLuogo/fk-fuwari` 这个仓库（只给这一个仓库权限即可）。
 3. 在仓库列表里选择 `fk-fuwari`，左侧会出现「文章」「关于页面」「站点设置」三个入口。
+
+> ⚠️ **改过 `.pages.yml` 之后要手动刷新配置**：Pages CMS 会把仓库里的 `.pages.yml` 缓存在它自己的数据库里，
+> 平时直接读缓存，不会自动跟着 GitHub 更新。所以改完配置（新增字段、按钮等）后，去左侧 **Cache** 页面，
+> 在 Config 那一栏点 **Refresh cache**，再重新打开文章编辑页，新字段/新按钮才会出现。
 4. 新建 / 编辑文章，保存后 Pages CMS 会自动向仓库提交一次 commit，Vercel 随之重新部署。
 
 ### 文章字段

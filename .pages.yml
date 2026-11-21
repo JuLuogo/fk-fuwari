@@ -47,9 +47,11 @@ content:
     format: yaml-frontmatter
     subfolders: true
     exclude: [README.md]
-    # 新建文章时的默认文件名，创建时可以手动改成英文或拼音，URL 会更好看
+    # 新建文章时的默认文件名。
+    # 中文标题会被 slug 成空（会变成 2026-11-21-.md），所以默认只用日期+时分保证不撞车，
+    # 创建时请把文件名手动改成英文或拼音，URL 会好看很多。
     filename:
-      template: "{year}-{month}-{day}-{primary}.md"
+      template: "{year}-{month}-{day}-{hour}{minute}.md"
       field: create
     view:
       fields: [title, published, category, draft]

@@ -71,18 +71,18 @@ content:
         options:
           format: yyyy-MM-dd
       # ---- 加密相关（放在最前面，避免找不到）----
-      - name: encrypted
-        label: 已加密
-        type: boolean
-        description: 打开后这篇文章需要密码才能阅读（配合下面的「文章密码」）
       - name: password
         label: 文章密码
         type: string
-        description: 填了密码并打开「已加密」，每次构建都会用最新正文自动加密；改密码直接改这里，改完保存即可
+        description: 填上密码这篇文章就自动加密（新建文章时直接填这里，保存即生效，不需要按钮）；改密码=改这里，清空=取消加密
       - name: passwordHint
         label: 密码提示
         type: string
         description: 显示在解锁框里的密码提示（可选）
+      - name: encrypted
+        label: 已加密（按钮模式）
+        type: boolean
+        description: 一般不用管。只有用右上角「加密这篇文章」按钮（密码不写进仓库）时才需要它；填了「文章密码」就与它无关了
 
       - name: description
         label: 摘要

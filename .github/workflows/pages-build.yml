@@ -1,0 +1,129 @@
+name: Build and publish
+
+# 触发方式
+# 1. push 到 main：自动判断这次提交改了什么
+#    - 只改了 public/images/ 下的图片 -> 跳过构建（避免文章没写完就发布一次构建）
+#    - 其他任何文件有改动 -> 构建，并把产物发布到 pages 分支
+# 2. workflow_dispatch：Pages CMS 里的「立即发布构建」按钮，或手动在 Actions 页面 Run workflow（总是构建）
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      payload:
+        description: Pages CMS payload as JSON
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-and-publish
+  cancel-in-progress: true
+
+jobs:
+  detect:
+    name: 判断改动范围
+    runs-on: ubuntu-latest
+    outputs:
+      should_build: ${{ steps.diff.outputs.should_build }}
+      reason: ${{ steps.diff.outputs.reason }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: 这次提交需要构建吗
+        id: diff
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          # 手动触发（Pages CMS 按钮 / Actions 页面）永远构建
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            echo "reason=手动触发，总是构建" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # 首次推送 / 拿不到上一个提交时，保守地构建
+          if [ -z "${BEFORE_SHA:-}" ] || ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            echo "reason=无法确定上一次提交，默认构建" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          changed="$(git diff --name-only "$BEFORE_SHA" "$AFTER_SHA")"
+          echo "本次改动的文件："
+          echo "$changed" | sed 's/^/  - /'
+
+          # 过滤掉图片目录后如果什么都不剩，说明只上传了图片，跳过构建
+          others="$(printf '%s\n' "$changed" | grep -vE '^public/images/' | grep -vE '^$' || true)"
+
+          if [ -z "$others" ]; then
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+            echo "reason=只有图片变化，跳过构建（写完后可在 Pages CMS 点「立即发布构建」）" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            echo "reason=有内容变化，开始构建" >> "$GITHUB_OUTPUT"
+          fi
+
+  skip:
+    name: 跳过构建
+    needs: detect
+    if: needs.detect.outputs.should_build != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 说明
+        run: |
+          echo "${{ needs.detect.outputs.reason }}"
+          echo "站点保持上一次 pages 分支的产物不变。"
+
+  build:
+    name: 构建并发布到 pages 分支
+    needs: detect
+    if: needs.detect.outputs.should_build == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: 发布到 pages 分支
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cd dist
+          # GitHub Pages 需要 .nojekyll，否则不会发布 _astro/ 这类下划线开头的目录
+          touch .nojekyll
+          git init -q
+          git checkout -q -B pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "build: ${GITHUB_SHA}"
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" pages
+          echo "已发布到 pages 分支，提交 ${GITHUB_SHA}"

@@ -14,7 +14,8 @@
 | 主题 | Fuwari（Tailwind CSS + Svelte） |
 | 站内搜索 | Pagefind（构建时生成索引） |
 | 内容管理 | Pages CMS（Git 驱动，保存即提交） |
-| 部署 | Vercel（推送到 main 自动构建） |
+| 构建 | GitHub Actions（改动图片以外才构建） |
+| 部署 | 构建产物推到 `pages` 分支，由 GitHub Pages / Vercel 托管 |
 
 ## 本地开发
 
@@ -31,7 +32,8 @@ pnpm new-post   # 用脚本新建一篇文章
 
 ```text
 .
-├── .pages.yml                 # Pages CMS 配置（后台字段 / 图片目录 / 文件命名）
+├── .pages.yml                 # Pages CMS 配置（后台字段 / 图片目录 / 文件命名 / 手动构建按钮）
+├── .github/workflows/         # pages-build.yml：构建并发布到 pages 分支
 ├── astro.config.mjs           # Astro 配置（站点域名在 site 字段）
 ├── public/
 │   ├── favicon/               # 站点图标（由头像生成）
@@ -155,15 +157,54 @@ pinned: false
 - **站点域名**（用于 sitemap 和 RSS）：`astro.config.mjs` 中的 `site`
 - **每页文章数**：`src/constants/constants.ts` 中的 `PAGE_SIZE`
 
-## 部署
+## 构建与发布
 
-推送到 `main` 分支即可自动部署到 Vercel。首次部署时在 Vercel 里导入本仓库即可，构建设置：
+构建由 GitHub Actions（[`.github/workflows/pages-build.yml`](.github/workflows/pages-build.yml)）负责，
+产物推到一个叫 **`pages`** 的分支，站点从那个分支对外提供。
 
-- 框架预设：Astro
-- 构建命令：`pnpm build`
-- 输出目录：`dist`
+### 自动构建的规则
 
-如果你用了别的域名，记得同步修改 `astro.config.mjs` 里的 `site`。
+推送到 `main` 时先看这次提交改了什么：
+
+| 改动内容 | 是否构建 |
+| --- | --- |
+| 只有 `public/images/` 下的图片 | **跳过**（文章还没写完、刚粘了图，不会白白部署一次） |
+| 正文 / frontmatter / 配置 / 样式 / 依赖 / 密文 …… 任何其他文件 | 构建并发布到 `pages` 分支 |
+| 拿不到上一次提交（首次推送、强制推送） | 保守起见，构建 |
+
+### 手动构建
+
+两个入口，效果一样（会强制构建一次）：
+
+1. **Pages CMS 左侧栏的「立即发布构建」按钮**（配置在 [`.pages.yml`](.pages.yml) 的 `actions` 里）
+2. GitHub → Actions → **Build and publish** → Run workflow
+
+> 为什么需要手动按钮：自动构建会跳过"只传图片"的提交，所以**新上传的图片要等下一次内容改动或手动构建才会真正发布**。
+> 写完文章后点一下「立即发布构建」，图片和正文就一起上线了。
+
+### 部署方式 A：GitHub Pages（推荐）
+
+1. 仓库 Settings → Pages → Build and deployment → Source 选 **Deploy from a branch**
+2. Branch 选 **`pages`**，目录选 **`/` (root)**，保存
+3. 等 Actions 跑完，站点地址是 `https://<用户名>.github.io/<仓库名>/`
+
+工作流会在产物里放一个 `.nojekyll`，确保 `_astro/` 这类下划线目录能正常访问。
+
+如果用了自定义域名，记得同步修改 `astro.config.mjs` 里的 `site`（影响 sitemap / RSS / 分享卡片）。
+
+### 部署方式 B：继续用 Vercel
+
+Vercel 不再直接从 `main` 构建，而是"托管 `pages` 分支里的静态文件"：
+
+1. Vercel 项目 → Settings → Git → **Production Branch** 改成 `pages`
+2. Settings → Build & Development Settings：Framework Preset 选 **Other**，**Build Command 留空**，**Output Directory 填 `.`**
+3. 建议把 "Ignored Build Step" 设为只在 Production 分支构建，避免 `main` 推送触发无意义的预览构建
+
+### 第一次跑之前
+
+- Actions 需要能推送分支：Settings → Actions → General → Workflow permissions 选 **Read and write permissions**
+  （工作流里已声明 `permissions: contents: write`，如果仍报 403 再检查这一项）
+- 分支保护规则不要拦住 `pages` 分支的推送
 
 ## 致谢
 

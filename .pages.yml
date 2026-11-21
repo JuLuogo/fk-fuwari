@@ -2,6 +2,19 @@
 # 打开 https://app.pagescms.org ，用 GitHub 账号登录并授权本仓库后即可开始写作。
 # 说明文档：https://pagescms.org/docs/configuration/
 
+# ---------- 手动操作按钮（仓库级，显示在左侧栏底部） ----------
+# 点了会触发 .github/workflows/pages-build.yml（workflow_dispatch），始终重新构建并发布到 pages 分支。
+# 用途：只上传了图片时自动构建会被跳过，写完文章后点这个按钮把图片一起发布出去。
+actions:
+  - name: publish-build
+    label: 立即发布构建
+    workflow: pages-build.yml
+    ref: current
+    confirm:
+      title: 立即发布构建？
+      message: 会用最新代码重新构建整站并发布到 pages 分支。刚上传的图片要等这一下才会出现在线上。
+      button: 开始构建
+
 # ---------- 图片存储 ----------
 # 上传的图片会存到仓库的 public/images/ 下，写进文章里的路径是 /images/xxx.jpg
 media:

@@ -9,11 +9,13 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { getSortedPosts } from "@utils/content-utils";
 import { getDir, getPostUrlBySlug } from "@utils/url-utils";
 import { Icon } from "astro-icon/components";
+import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { licenseConfig } from "src/config";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
 import { profileConfig, siteConfig } from "../../config";
 import { formatDateToYYYYMMDD } from "../../utils/date-utils";
+import { encryptPostContent } from "../../utils/encrypt-post";
 import type { EncryptedPostPayload } from "../../utils/encrypted-format";
 
 export async function getStaticPaths() {
@@ -29,16 +31,36 @@ const { Content, headings } = await entry.render();
 
 const { remarkPluginFrontmatter } = await entry.render();
 
-// 加密文章：正文以密文形式放在 src/data/encrypted/<slug>.json，
-// 仓库里的 md 只是「frontmatter + 空正文」的 stub。密码本身从不进仓库。
+// 加密文章有两种来源：
+// 1) 前端里填了「文章密码」-> 每次构建都用当前正文重新加密（改正文/改密码都会自动生效）
+// 2) 没填密码 -> 用「加密这篇文章」按钮或 pnpm lock-post 生成的密文 JSON
 const encryptedPayloads = import.meta.glob<EncryptedPostPayload>(
 	"/src/data/encrypted/*.json",
 	{ eager: true, import: "default" },
 );
 const isEncrypted = entry.data.encrypted === true;
-const payload = isEncrypted
-	? (encryptedPayloads[`/src/data/encrypted/${entry.slug}.json`] ?? null)
-	: null;
+const password = (entry.data.password ?? "").trim();
+let payload: EncryptedPostPayload | null = null;
+
+if (isEncrypted) {
+	if (password) {
+		const container = await AstroContainer.create();
+		const contentHtml = await container.renderToString(Content);
+		// Astro 的 headings 里带着 rehype-autolink 追加的 “#”，这里去掉，方便前端重建目录
+		const cleanHeadings = headings.map((heading) => ({
+			depth: heading.depth,
+			slug: heading.slug,
+			text: heading.text.replace(/#\s*$/, "").trim(),
+		}));
+		payload = await encryptPostContent(
+			JSON.stringify({ html: contentHtml, headings: cleanHeadings }),
+			password,
+		);
+	} else {
+		payload =
+			encryptedPayloads[`/src/data/encrypted/${entry.slug}.json`] ?? null;
+	}
+}
 
 const jsonLd = {
 	"@context": "https://schema.org",

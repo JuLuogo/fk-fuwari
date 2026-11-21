@@ -38,6 +38,8 @@ const postsCollection = defineCollection({
 		// 加密文章：正文以密文形式放在 src/data/encrypted/<slug>.json，
 		// md 只是 frontmatter + 空正文的 stub（密码从不进仓库）
 		encrypted: booleanOrFalse,
+		// 填了密码 -> 每次构建都用当前正文自动加密（改正文/改密码都自动生效）
+		password: stringOrEmpty,
 		passwordHint: stringOrEmpty,
 		description: stringOrEmpty,
 		image: stringOrEmpty,

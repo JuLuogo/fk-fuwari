@@ -91,10 +91,14 @@ content:
         label: 置顶
         type: boolean
         description: 打开后会排在首页和归档最前面，并在卡片和文章页显示置顶标记
+      - name: password
+        label: 文章密码
+        type: string
+        description: 填了密码并打开「已加密」，每次构建都会用最新正文自动加密（改正文、改密码都会自动生效）。注意：密码会写在仓库的 frontmatter 里
       - name: passwordHint
         label: 密码提示
         type: string
-        description: 加密文章才有用，会显示在解锁框里
+        description: 显示在解锁框里的密码提示（可选）
       - name: encrypted
         label: 已加密
         type: boolean
